@@ -1,0 +1,251 @@
+# Copyright IBM Corp. All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+
+Organizations:
+    - &OrdererOrg
+        Name: OrdererOrg
+        ID: OrdererOrg
+        MSPDir: /tmp/crypto-config/ordererOrganizations/islab.re.kr/msp
+        Policies:
+            Readers:
+                Type: Signature
+                Rule: "OR('OrdererOrg.member')"
+            Writers:
+                Type: Signature
+                Rule: "OR('OrdererOrg.member')"
+            Admins:
+                Type: Signature
+                Rule: "OR('OrdererOrg.admin')"
+
+        OrdererEndpoints:
+            - orderer0.islab.re.kr:7050
+            - orderer1.islab.re.kr:7050
+            - orderer2.islab.re.kr:7050
+
+    - &Ai
+        Name: aiMSP
+        ID: aiMSP
+        MSPDir: /tmp/crypto-config/peerOrganizations/ai.islab.re.kr/msp
+        Policies:
+            Readers:
+                Type: Signature
+                Rule: "OR('aiMSP.member')"
+            Writers:
+                Type: Signature
+                Rule: "OR('aiMSP.member')"
+            Admins:
+                Type: Signature
+                Rule: "OR('aiMSP.admin')"
+            Endorsement:
+                Type: Signature
+                Rule: "OR('aiMSP.member')"
+        AnchorPeers:
+            - Host: peer0.ai.islab.re.kr
+              Port: 7051
+
+    - &Blockchain
+        Name: blockchainMSP
+
+        ID: blockchainMSP
+
+        MSPDir: /tmp/crypto-config/peerOrganizations/blockchain.islab.re.kr/msp
+
+        Policies:
+            Readers:
+                Type: Signature
+                Rule: "OR('blockchainMSP.member')"
+            Writers:
+                Type: Signature
+                Rule: "OR('blockchainMSP.member')"
+            Admins:
+                Type: Signature
+                Rule: "OR('blockchainMSP.admin')"
+            Endorsement:
+                Type: Signature
+                Rule: "OR('blockchainMSP.member')"
+        AnchorPeers:
+            - Host: peer0.blockchain.islab.re.kr
+              Port: 7051
+
+    - &Security
+        Name: securityMSP
+
+        ID: securityMSP
+
+        MSPDir: /tmp/crypto-config/peerOrganizations/security.islab.re.kr/msp
+
+        Policies:
+            Readers:
+                Type: Signature
+                Rule: "OR('securityMSP.member')"
+            Writers:
+                Type: Signature
+                Rule: "OR('securityMSP.member')"
+            Admins:
+                Type: Signature
+                Rule: "OR('securityMSP.admin')"
+            Endorsement:
+                Type: Signature
+                Rule: "OR('securityMSP.member')"
+        AnchorPeers:
+            - Host: peer0.security.islab.re.kr
+              Port: 7051
+
+Capabilities:
+    Channel: &ChannelCapabilities
+        V2_0: true
+
+    Orderer: &OrdererCapabilities
+        V2_0: true
+
+    Application: &ApplicationCapabilities
+        V2_0: true
+
+Application: &ApplicationDefaults
+    ACLs: &ACLsDefault
+        _lifecycle/CheckCommitReadiness: /Channel/Application/Writers
+        _lifecycle/CommitChaincodeDefinition: /Channel/Application/Writers
+        _lifecycle/QueryChaincodeDefinition: /Channel/Application/Readers
+        _lifecycle/QueryChaincodeDefinitions: /Channel/Application/Readers
+        lscc/ChaincodeExists: /Channel/Application/Readers
+        lscc/GetDeploymentSpec: /Channel/Application/Readers
+        lscc/GetChaincodeData: /Channel/Application/Readers
+        lscc/GetInstantiatedChaincodes: /Channel/Application/Readers
+        qscc/GetChainInfo: /Channel/Application/Readers
+        qscc/GetBlockByNumber: /Channel/Application/Readers
+        qscc/GetBlockByHash: /Channel/Application/Readers
+        qscc/GetTransactionByID: /Channel/Application/Readers
+        qscc/GetBlockByTxID: /Channel/Application/Readers
+        cscc/GetConfigBlock: /Channel/Application/Readers
+        cscc/GetConfigTree: /Channel/Application/Readers
+        cscc/SimulateConfigTreeUpdate: /Channel/Application/Readers
+        peer/Propose: /Channel/Application/Writers
+        peer/ChaincodeToChaincode: /Channel/Application/Readers
+        event/Block: /Channel/Application/Readers
+        event/FilteredBlock: /Channel/Application/Readers
+    Organizations:
+    Policies: &ApplicationDefaultPolicies
+        Readers:
+            Type: ImplicitMeta
+            Rule: "ANY Readers"
+        Writers:
+            Type: ImplicitMeta
+            Rule: "ANY Writers"
+        Admins:
+            Type: ImplicitMeta
+            Rule: "MAJORITY Admins"
+        LifecycleEndorsement:
+            Type: ImplicitMeta
+            Rule: "MAJORITY Endorsement"
+        Endorsement:
+            Type: ImplicitMeta
+            Rule: "MAJORITY Endorsement"
+    Capabilities:
+        <<: *ApplicationCapabilities
+
+Orderer: &OrdererDefaults
+    OrdererType: etcdraft
+    Addresses:
+        - orderer0.islab.re.kr:7050
+        - orderer1.islab.re.kr:7050
+        - orderer2.islab.re.kr:7050
+
+    EtcdRaft:
+        Consenters:
+        - Host: orderer0.islab.re.kr
+          Port: 7050
+          ClientTLSCert: /tmp/crypto-config/ordererOrganizations/islab.re.kr/orderers/orderer0.islab.re.kr/tls/server.crt
+          ServerTLSCert: /tmp/crypto-config/ordererOrganizations/islab.re.kr/orderers/orderer0.islab.re.kr/tls/server.crt 
+        - Host: orderer1.islab.re.kr
+          Port: 7050
+          ClientTLSCert: /tmp/crypto-config/ordererOrganizations/islab.re.kr/orderers/orderer1.islab.re.kr/tls/server.crt
+          ServerTLSCert: /tmp/crypto-config/ordererOrganizations/islab.re.kr/orderers/orderer1.islab.re.kr/tls/server.crt
+        - Host: orderer2.islab.re.kr
+          Port: 7050
+          ClientTLSCert: /tmp/crypto-config/ordererOrganizations/islab.re.kr/orderers/orderer2.islab.re.kr/tls/server.crt
+          ServerTLSCert: /tmp/crypto-config/ordererOrganizations/islab.re.kr/orderers/orderer2.islab.re.kr/tls/server.crt
+    BatchTimeout: 2s
+
+    BatchSize:
+        MaxMessageCount: 10
+        AbsoluteMaxBytes: 99 MB
+        PreferredMaxBytes: 512 KB
+
+    Organizations:
+
+    Policies:
+        Readers:
+            Type: ImplicitMeta
+            Rule: "ANY Readers"
+        Writers:
+            Type: ImplicitMeta
+            Rule: "ANY Writers"
+        Admins:
+            Type: ImplicitMeta
+            Rule: "MAJORITY Admins"
+        BlockValidation:
+            Type: ImplicitMeta
+            Rule: "ANY Writers"
+    Capabilities:
+        <<: *OrdererCapabilities
+
+
+Channel: &ChannelDefaults
+    Policies:
+        Readers:
+            Type: ImplicitMeta
+            Rule: "ANY Readers"
+        # Who may invoke the 'Broadcast' API
+        Writers:
+            Type: ImplicitMeta
+            Rule: "ANY Writers"
+        # By default, who may modify elements at this config level
+        Admins:
+            Type: ImplicitMeta
+            Rule: "MAJORITY Admins"
+    Capabilities:
+        <<: *ChannelCapabilities
+
+Profiles:
+    systemChannel:
+        <<: *ChannelDefaults
+        Orderer:
+            <<: *OrdererDefaults
+            Organizations:
+                - *OrdererOrg
+        Consortiums:
+            ISLab:
+                Organizations:
+                    - *Ai
+                    - *Blockchain
+                    - *Security
+    rshChannel:
+        Consortium: ISLab
+        <<: *ChannelDefaults
+        Application:
+            <<: *ApplicationDefaults
+            Organizations:
+                - *Ai
+                - *Blockchain
+                - *Security
+    devChannel:
+        Consortium: ISLab
+        <<: *ChannelDefaults
+        Application:
+            <<: *ApplicationDefaults
+            Organizations:
+                - *Ai
+                - *Blockchain
+                - *Security
+    playgroundChannel:
+        Consortium: ISLab
+        <<: *ChannelDefaults
+        Application:
+            <<: *ApplicationDefaults
+            Organizations:
+                - *Ai
+                - *Blockchain
+                - *Security
