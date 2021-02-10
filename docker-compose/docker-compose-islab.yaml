@@ -119,7 +119,7 @@ services:
       # the following setting starts chaincode containers on the same
       # bridge network as the peers
       # https://docs.docker.com/compose/networking/
-      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=docker-compose_test
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=dockercompose_test
       - FABRIC_LOGGING_SPEC=INFO
       - CORE_PEER_TLS_ENABLED=true
       - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
@@ -155,7 +155,7 @@ services:
       # the following setting starts chaincode containers on the same
       # bridge network as the peers
       # https://docs.docker.com/compose/networking/
-      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=docker-compose_test
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=dockercompose_test
       - FABRIC_LOGGING_SPEC=INFO
       - CORE_PEER_TLS_ENABLED=true
       - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
@@ -191,7 +191,7 @@ services:
       # the following setting starts chaincode containers on the same
       # bridge network as the peers
       # https://docs.docker.com/compose/networking/
-      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=docker-compose_test
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=dockercompose_test
       - FABRIC_LOGGING_SPEC=INFO
       - CORE_PEER_TLS_ENABLED=true
       - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
@@ -226,7 +226,7 @@ services:
     environment:
       - GOPATH=/opt/gopath
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
-      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=docker-compose_test
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=dockercompose_test
       - FABRIC_LOGGING_SPEC=INFO
       - CORE_PEER_TLS_ENABLED=false
       - CORE_PEER_ID=peer0.ai.islab.re.kr
