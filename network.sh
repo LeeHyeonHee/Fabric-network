@@ -1,13 +1,102 @@
+#!/bin/bash
+
 export DIR="$( cd "$( dirname "$0" )" && pwd )"
 export CDIR=$DIR/config
 export BDIR=$DIR/build
 export FABRIC_CFG_PATH=${PWD}/configtx
 
+function caNetworkUp() {
+    docker-compose -f ./docker-compose/docker-compose-ca.yaml up -d 2>&1
+
+    makeOrgs ai
+    # makeOrgs blockchain
+    # makeOrgs security
+}
+
+function makeOrgs() {
+
+    orgName=$1
+
+    mkdir -p ./build/crypto-config/peerOrganizations/${orgName}.islab.re.kr/
+
+    export FABRIC_CA_CLIENT_HOME=${PWD}/build/crypto-config/peerOrganizations/${orgName}.islab.re.kr/
+
+        # -w /etc/hyperledger/fabric-ca-server \
+        # -e FABRIC_CA_CLIENT_HOME=${PWD}/build/crypto-config/peerOrganizations/${orgName}.islab.re.kr/ \
+    docker exec -i -t \
+        ca_${orgName}.islab.re.kr fabric-ca-client enroll \
+            -u https://admin:adminpw@localhost:7054 --caname ca_${orgName}.islab.re.kr \
+            --tls.certfiles /etc/hyperledger/fabric-ca-server/tls-cert.pem
+            # ${PWD}/build/organizations/fabric-ca/${orgName}/tls-cert.pem
+
+    Sleep 1
+
+    mkdir ./build/crypto-config/peerOrganizations/ca_${orgName}.islab.re.kr/msp
+
+    echo "NodeOUs:
+    Enable: true
+    ClientOUIdentifier:
+      Certificate: cacerts/ca.${orgName}.islab.re.kr-cert.pem
+      OrganizationalUnitIdentifier: client
+    PeerOUIdentifier:
+      Certificate: cacerts/ca.${orgName}.islab.re.kr-cert.pem
+      OrganizationalUnitIdentifier: peer
+    AdminOUIdentifier:
+      Certificate: cacerts/ca.${orgName}.islab.re.kr-cert.pem
+      OrganizationalUnitIdentifier: admin
+    OrdererOUIdentifier:
+      Certificate: cacerts/ca.${orgName}.islab.re.kr-cert.pem
+      OrganizationalUnitIdentifier: orderer" >${PWD}/build/crypto-config/peerOrganizations/ca_${orgName}.islab.re.kr/msp/config.yaml
+
+    docker exec -i -t \
+        ca_${orgName}.islab.re.kr fabric-ca-client register \
+            -d \
+            --caname ca_${orgName}.islab.re.kr \
+            --id.name peer0 \
+            --id.secret peer0pw \
+            --id.type peer \
+            --tls.certfiles /etc/hyperledger/fabric-ca-server/tls-cert.pem
+
+    docker exec -i -t \
+        ca_${orgName}.islab.re.kr fabric-ca-client register \
+            --caname ca_${orgName}.islab.re.kr \
+            --id.name user1 \
+            --id.secret user1pw \
+            --id.type client \
+            --tls.certfiles /etc/hyperledger/fabric-ca-server/tls-cert.pem
+
+    docker exec -i -t \
+        ca_${orgName}.islab.re.kr fabric-ca-client register \
+            --caname ca_${orgName}.islab.re.kr \
+            --id.name ${orgName}admin \
+            --id.secret ${orgName}adminpw \
+            --id.type admin \
+            --tls.certfiles /etc/hyperledger/fabric-ca-server/tls-cert.pem
+
+    docker exec -i -t \
+        ca_${orgName}.islab.re.kr fabric-ca-client enroll \
+            -u https://peer0:peer0pw@localhost:7054 \
+            --caname ca_${orgName}.islab.re.kr \
+            -M /etc/hyperledger/fabric/msp \
+            --csr.hosts peer0.ca_${orgName}.islab.re.kr \
+            --tls.certfiles /etc/hyperledger/fabric-ca-server/tls-cert.pem
+
+    docker exec -i -t \
+        ca_${orgName}.islab.re.kr fabric-ca-client enroll \
+            -u https://peer0:peer0pw@localhost:7054 \
+            --caname ca_${orgName}.islab.re.kr \
+            -M /etc/hyperledger/fabric/tls \
+            --enrollment.profile tls \
+            --csr.hosts peer0.ca_${orgName}.islab.re.kr \
+            --tls.certfiles /etc/hyperledger/fabric-ca-server/tls-cert.pem
+
+}
+
 function networkUp() {
     mkdir -p $BDIR
 
     docker run --rm --name fabric-tools -v $CDIR/:/tmp -w /tmp hyperledger/fabric-tools:2.2 cryptogen generate --config=/tmp/crypto-config.yaml --output="crypto-config"
-    sudo mv $CDIR/crypto-config $BDIR/crypto-config
+    mv $CDIR/crypto-config $BDIR/crypto-config
 
     docker run --rm --name fabric-tools \
         -v $DIR/configtx:/tmp/configtx \
@@ -17,7 +106,7 @@ function networkUp() {
         hyperledger/fabric-tools:2.2 \
         configtxgen -profile systemChannel \
         -channelID system-channel -outputBlock ./genesis.block
-    sudo mv $DIR/configtx/genesis.block $BDIR/
+    mv $DIR/configtx/genesis.block $BDIR/
 
     docker-compose -f ./docker-compose/docker-compose-islab.yaml -f ./docker-compose/docker-compose-couch.yaml -f ./docker-compose/docker-compose-ca.yaml up -d 2>&1
 }
@@ -629,7 +718,7 @@ done
 
 if [ "$MODE" == "all" ]; then
     networkDown
-    sudo rm -Rf $BDIR
+    rm -Rf $BDIR
     networkUp
     createChannel ai rsh
     joinChannel ai rsh
@@ -646,11 +735,13 @@ if [ "$MODE" == "all" ]; then
     deployCC myChaincode 1.0 1
 elif [ "$MODE" == "up" ]; then
     networkUp
+elif [ "$MODE" == "caup" ]; then
+    caNetworkUp
 elif [ "$MODE" == "down" ]; then
     networkDown
 elif [ "$MODE" == "clean" ]; then
     networkDown
-    sudo rm -Rf $BDIR
+    rm -Rf $BDIR
 elif [ "$MODE" == "createChannel" ]; then
     createChannel ai rsh
     joinChannel ai rsh
