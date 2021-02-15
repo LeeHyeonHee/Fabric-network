@@ -81,6 +81,8 @@ function makeOrgs() {
             --csr.hosts peer0.ca_${orgName}.islab.re.kr \
             --tls.certfiles /etc/hyperledger/fabric-ca-server/tls-cert.pem
 
+    # cp ${PWD}/build/crypto-config/peerOrganizations/ca_${orgName}.islab.re.kr/peers/peer0.ca_${prgName}.islab.re.kr
+
     docker exec -i -t \
         ca_${orgName}.islab.re.kr fabric-ca-client enroll \
             -u https://peer0:peer0pw@localhost:7054 \
@@ -89,6 +91,126 @@ function makeOrgs() {
             --enrollment.profile tls \
             --csr.hosts peer0.ca_${orgName}.islab.re.kr \
             --tls.certfiles /etc/hyperledger/fabric-ca-server/tls-cert.pem
+
+    cp ${PWD}/build/crypto-config/peerOrganizations/ca_${orgName}.islab.re.kr/peers/peer0.ca_${prgName}.islab.re.kr/tls/tlscacerts/* ${PWD}/build/crypto-config/peerOrganizations/ca_${orgName}.islab.re.kr/peers/peer0.ca_${orgName}.islab.re.kr/tls/ca.crt
+    cp ${PWD}/build/crypto-config/peerOrganizations/ca_${orgName}.islab.re.kr/peers/peer0.ca_${prgName}.islab.re.kr/tls/signcerts/* ${PWD}/build/crypto-config/peerOrganizations/ca_${orgName}.islab.re.kr/peers/peer0.ca_${orgName}.islab.re.kr/tls/server.crt
+    cp ${PWD}/build/crypto-config/peerOrganizations/ca_${orgName}.islab.re.kr/peers/peer0.ca_${prgName}.islab.re.kr/tls/keystore/* ${PWD}/build/crypto-config/peerOrganizations/ca_${orgName}.islab.re.kr/peers/peer0.ca_${orgName}.islab.re.kr/tls/server.key
+
+    mkdir -p ${PWD}/build/crypto-config/peerOrganizations/ca_${orgName}.islab.re.kr/msp/tlscacerts
+    cp ${PWD}/build/crypto-config/peerOrganizations/ca_${orgName}.islab.re.kr/peers/peer0.ca_${prgName}.islab.re.kr/tls/tlscacerts/* ${PWD}/build/crypto-config/peerOrganizations/ca_${orgName}.islab.re.kr/msp/tlscacerts/ca.crt
+
+    mkdir -p ${PWD}/build/crypto-config/peerOrganizations/ca_${orgName}.islab.re.kr/tlsca
+    cp ${PWD}/build/crypto-config/peerOrganizations/ca_${orgName}.islab.re.kr/peers/peer0.ca_${prgName}.islab.re.kr/tls/tlscacerts/* ${PWD}/build/crypto-config/peerOrganizations/ca_${orgName}.islab.re.kr/tlsca/tlsca.ca_${orgName}.islab.re.kr-cert.pem
+
+    mkdir -p ${PWD}/build/crypto-config/peerOrganizations/ca_${orgName}.islab.re.kr/ca
+    cp ${PWD}/build/crypto-config/peerOrganizations/ca_${orgName}.islab.re.kr/peers/peer0.ca_${prgName}.islab.re.kr/msp/cacerts/* ${PWD}/build/crypto-config/peerOrganizations/ca_${orgName}.islab.re.kr/ca/ca.ca_${orgName}.islab.re.kr-cert.pem
+
+    docker exec -i -t \
+        ca_${orgName}.islab.re.kr fabric-ca-client enroll \
+            -u https://user1:user1pw@localhost:7054 \
+            --caname ca_${orgName}.islab.re.kr \
+            -M /etc/hyperledger/fabric/users/User1@ca_${orgName}.islab.re.kr/msp \
+            --tls.certfiles /etc/hyperledger/fabric-ca-server/tls-cert.pem
+
+    cp ${PWD}/build/crypto-config/peerOrganizations/ca_${orgName}.islab.re.kr/msp/config.yaml ${PWD}/build/crypto-config/peerOrganizations/ca_${orgName}.islab.re.kr/users/User1@ca_${orgName}.islab.re.kr/msp/config.yaml
+
+    docker exec -i -t \
+        ca_${orgName}.islab.re.kr fabric-ca-client enroll \
+            -u https://${orgName}admin:${orgName}adminpw@localhost:7054 \
+            --caname ca_${orgName}.islab.re.kr \
+            -M /etc/hyperledger/fabric/users/Admin@ca_${orgName}.islab.re.kr/msp \
+            --tls.certfiles /etc/hyperledger/fabric-ca-server/tls-cert.pem
+
+    cp ${PWD}/build/crypto-config/peerOrganizations/ca_${orgName}.islab.re.kr/msp/config.yaml ${PWD}/build/crypto-config/peerOrganizations/ca_${orgName}.islab.re.kr/users/Admin@ca_${orgName}.islab.re.kr/msp/config.yaml
+}
+
+function makeOrderer() {
+
+
+    mkdir -p ./build/crypto-config/ordererOrganizations/islab.re.kr
+
+    export FABRIC_CA_CLIENT_HOME=${PWD}/build/crypto-config/ordererOrganizations/islab.re.kr
+
+        # -w /etc/hyperledger/fabric-ca-server \
+        # -e FABRIC_CA_CLIENT_HOME=${PWD}/build/crypto-config/peerOrganizations/${orgName}.islab.re.kr/ \
+    docker exec -i -t \
+        ca_orderer.islab.re.kr fabric-ca-client enroll \
+            -u https://admin:adminpw@localhost:7054 --caname ca_orderer.islab.re.kr \
+            --tls.certfiles /etc/hyperledger/fabric-ca-server/tls-cert.pem
+            # ${PWD}/build/organizations/fabric-ca/${orgName}/tls-cert.pem
+
+    Sleep 1
+
+    mkdir ./build/crypto-config/ordererOrganizations/islab.re.kr/msp
+
+    echo "NodeOUs:
+    Enable: true
+    ClientOUIdentifier:
+      Certificate: cacerts/islab.re.kr-cert.pem
+      OrganizationalUnitIdentifier: client
+    PeerOUIdentifier:
+      Certificate: cacerts/islab.re.kr-cert.pem
+      OrganizationalUnitIdentifier: peer
+    AdminOUIdentifier:
+      Certificate: cacerts/islab.re.kr-cert.pem
+      OrganizationalUnitIdentifier: admin
+    OrdererOUIdentifier:
+      Certificate: cacerts/islab.re.kr-cert.pem
+      OrganizationalUnitIdentifier: orderer" >${PWD}/build/crypto-config/ordererOrganizations/islab.re.kr/msp/config.yaml
+
+    docker exec -i -t \
+        ca_orderer.islab.re.kr fabric-ca-client register \
+            --caname ca_orderer.islab.re.kr \
+            --id.name orderer \
+            --id.secret ordererpw \
+            --id.type orderer \
+            --tls.certfiles /etc/hyperledger/fabric-ca-server/tls-cert.pem
+
+    docker exec -i -t \
+        ca_orderer.islab.re.kr fabric-ca-client register \
+            --caname ca_orderer.islab.re.kr \
+            --id.name ordererAdmin \
+            --id.secret ordererAdminpw \
+            --id.type admin \
+            --tls.certfiles /etc/hyperledger/fabric-ca-server/tls-cert.pem
+
+    docker exec -i -t \
+        ca_orderer.islab.re.kr fabric-ca-client enroll \
+            -u https://orderer:ordererpw@localhost:7054 \
+            --caname ca_orderer.islab.re.kr \
+            -M /etc/hyperledger/fabric/msp \
+            --csr.hosts ca_orderer.islab.re.kr \
+            --tls.certfiles /etc/hyperledger/fabric-ca-server/tls-cert.pem
+
+    # cp ${PWD}/build/crypto-config/ordererOrganizations/orderer.islab.re.kr/msp/config.yaml ${PWD}/build/crypto-config/ordererOrganizations/orderer.islab.re.kr/orderers/orderer.islab.re.kr/msp/config.yaml
+
+    docker exec -i -t \
+        ca_orderer.islab.re.kr fabric-ca-client enroll \
+            -u https://orderer:ordererpw@localhost:7054 \
+            --caname ca_orderer.islab.re.kr \
+            -M /etc/hyperledger/fabric/tls \
+            --enrollment.profile tls \
+            --csr.hosts ca_orderer.islab.re.kr \
+            --tls.certfiles /etc/hyperledger/fabric-ca-server/tls-cert.pem
+
+    cp ${PWD}/build/crypto-config/ordererOrganizations/orderer.islab.re.kr/tls/tlscacerts/* ${PWD}/build/crypto-config/ordererOrganizations/orderer.islab.re.kr/orderers/orderer.islab.re.kr/tls/ca.crt
+    cp ${PWD}/build/crypto-config/ordererOrganizations/orderer.islab.re.kr/tls/signcerts/* ${PWD}/build/crypto-config/ordererOrganizations/orderer.islab.re.kr/orderers/orderer.islab.re.kr/tls/server.crt
+    cp ${PWD}/build/crypto-config/ordererOrganizations/orderer.islab.re.kr/tls/keystore/* ${PWD}/build/crypto-config/ordererOrganizations/orderer.islab.re.kr/orderers/orderer.islab.re.kr/tls/server.key
+
+    mkdir -p ${PWD}/build/crypto-config/ordererOrganizations/orderer.islab.re.kr/orderers/orderer.islab.re.kr/msp/tlscacerts
+    cp ${PWD}/build/crypto-config/ordererOrganizations/orderer.islab.re.kr/orderers/orderer.islab.re.kr/tls/tlscacerts/* ${PWD}/build/crypto-config/ordererOrganizations/orderer.islab.re.kr/orderers/orderer.islab.re.kr/msp/tlscacerts/tlsca.islab.re.kr-cert.pem
+
+    mkdir -p ${PWD}/build/crypto-config/ordererOrganizations/orderer.islab.re.kr/msp/tlscacerts
+    cp ${PWD}/build/crypto-config/ordererOrganizations/orderer.islab.re.kr/orderers/orderer.islab.re.kr/tls/tlscacerts/* ${PWD}/build/crypto-config/ordererOrganizations/orderer.islab.re.kr/tlscacerts/tlsca.islab.re.kr-cert.pem
+
+    docker exec -i -t \
+        ca_orderer.islab.re.kr fabric-ca-client enroll \
+            -u https://ordererAdmin:ordererAdminpw@localhost:7054 \
+            --caname ca_orderer.islab.re.kr \
+            -M /etc/hyperledger/fabric/users/Admin@orderer.islab.re.kr/msp \
+            --tls.certfiles /etc/hyperledger/fabric-ca-server/tls-cert.pem
+
+    cp ${PWD}/build/crypto-config/ordererOrganizations/orderer.islab.re.kr/msp/config.yaml ${PWD}/build/crypto-config/ordererOrganizations/orderer.islab.re.kr/users/Admin@orderer.islab.re.kr/msp/config.yaml
 
 }
 
