@@ -21,9 +21,10 @@ services:
       - "7054:7054"
     command: sh -c 'fabric-ca-server start -b admin:adminpw -d'
     volumes:
-      - ../build/organizations/fabric-ca/ai:/etc/hyperledger/fabric-ca-server
+      - ../build/crypto-config/peerOrganizations/ca_ai.islab.re.kr:/etc/hyperledger/fabric-ca-server
       - ../build/crypto-config/peerOrganizations/ca_ai.islab.re.kr/peers/peer0.ca_ai.islab.re.kr/msp:/etc/hyperledger/fabric/msp
       - ../build/crypto-config/peerOrganizations/ca_ai.islab.re.kr/peers/peer0.ca_ai.islab.re.kr/tls:/etc/hyperledger/fabric/tls
+      - ../build/crypto-config/peerOrganizations/ca_ai.islab.re.kr/users:/etc/hyperledger/fabric/users
     container_name: ca_ai.islab.re.kr
     networks:
       - test
@@ -39,9 +40,10 @@ services:
       - "8054:7054"
     command: sh -c 'fabric-ca-server start -b admin:adminpw -d'
     volumes:
-      - ../build/organizations/fabric-ca/blockchain:/etc/hyperledger/fabric-ca-server
+      - ../build/crypto-config/peerOrganizations/ca_blockchain.islab.re.kr:/etc/hyperledger/fabric-ca-server
       - ../build/crypto-config/peerOrganizations/ca_blockchain.islab.re.kr/peers/peer0.ca_blockchain.islab.re.kr/msp:/etc/hyperledger/fabric/msp
       - ../build/crypto-config/peerOrganizations/ca_blockchain.islab.re.kr/peers/peer0.ca_blockchain.islab.re.kr/tls:/etc/hyperledger/fabric/tls
+      - ../build/crypto-config/peerOrganizations/ca_blockchain.islab.re.kr/users:/etc/hyperledger/fabric/users
     container_name: ca_blockchain.islab.re.kr
     networks:
       - test
@@ -56,9 +58,10 @@ services:
       - "9054:7054"
     command: sh -c 'fabric-ca-server start -b admin:adminpw -d'
     volumes:
-      - ../build/organizations/fabric-ca/security:/etc/hyperledger/fabric-ca-server
+      - ../build/crypto-config/peerOrganizations/ca_security.islab.re.kr:/etc/hyperledger/fabric-ca-server
       - ../build/crypto-config/peerOrganizations/ca_security.islab.re.kr/peers/peer0.ca_security.islab.re.kr/msp:/etc/hyperledger/fabric/msp
       - ../build/crypto-config/peerOrganizations/ca_security.islab.re.kr/peers/peer0.ca_security.islab.re.kr/tls:/etc/hyperledger/fabric/tls
+      - ../build/crypto-config/peerOrganizations/ca_security.islab.re.kr/users:/etc/hyperledger/fabric/users
     container_name: ca_security.islab.re.kr
     networks:
       - test
@@ -67,14 +70,17 @@ services:
     image: hyperledger/fabric-ca:1.4.9
     environment:
       - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
-      - FABRIC_CA_SERVER_CA_NAME=ca-orderer
+      - FABRIC_CA_SERVER_CA_NAME=orderer.islab.re.kr
       - FABRIC_CA_SERVER_TLS_ENABLED=true
       - FABRIC_CA_SERVER_PORT=7054
     ports:
       - "10054:7054"
     command: sh -c 'fabric-ca-server start -b admin:adminpw -d'
     volumes:
-      - ../build/organizations/fabric-ca/orderer.islab.re.kr:/etc/hyperledger/fabric-ca-server
+      - ../build/crypto-config/ordererOrganizations/orderer.islab.re.kr:/etc/hyperledger/fabric-ca-server
+      - ../build/crypto-config/ordererOrganizations/orderer.islab.re.kr/orderers/orderer.islab.re.kr/msp:/etc/hyperledger/fabric/msp
+      - ../build/crypto-config/ordererOrganizations/orderer.islab.re.kr/orderers/orderer.islab.re.kr/tls:/etc/hyperledger/fabric/tls
+      - ../build/crypto-config/ordererOrganizations/orderer.islab.re.kr/users:/etc/hyperledger/fabric/users
     container_name: ca_orderer.islab.re.kr
     networks:
       - test
