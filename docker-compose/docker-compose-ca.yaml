@@ -78,8 +78,8 @@ services:
     command: sh -c 'fabric-ca-server start -b admin:adminpw -d'
     volumes:
       - ../build/crypto-config/ordererOrganizations/orderer.islab.re.kr:/etc/hyperledger/fabric-ca-server
-      - ../build/crypto-config/ordererOrganizations/orderer.islab.re.kr/msp:/etc/hyperledger/fabric/msp
-      - ../build/crypto-config/ordererOrganizations/orderer.islab.re.kr/tls:/etc/hyperledger/fabric/tls
+      - ../build/crypto-config/ordererOrganizations/orderer.islab.re.kr/orderers/orderer.islab.re.kr/msp:/etc/hyperledger/fabric/msp
+      - ../build/crypto-config/ordererOrganizations/orderer.islab.re.kr/orderers/orderer.islab.re.kr/tls:/etc/hyperledger/fabric/tls
       - ../build/crypto-config/ordererOrganizations/orderer.islab.re.kr/users:/etc/hyperledger/fabric/users
     container_name: ca_orderer.islab.re.kr
     networks:
