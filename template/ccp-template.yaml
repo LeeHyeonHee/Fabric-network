@@ -1,0 +1,35 @@
+---
+name: test-network-
+version: 1.0.0
+client:
+  organization: Org
+  connection:
+    timeout:
+      peer:
+        endorser: '300'
+organizations:
+  Or:
+    mspid: ~~MSP
+    peers:
+    - peer0.
+    certificateAuthorities:
+    - ca.~~
+peers:
+  peer0.or:
+    url: grpcs://
+    tlsCACerts:
+      pem: |
+          ${}
+    grpcOptions:
+      ssl-target-name-override: peer0.
+      hostnameOverride: peer0.
+certificateAuthorities:
+  ca.:
+    url: https://
+    caName: ca-
+    tlsCACerts:
+      pem:
+        - |
+          ${}
+    httpOptions:
+      verify: false

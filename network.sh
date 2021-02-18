@@ -17,6 +17,47 @@ function caNetworkUp() {
     makeOrderer
 }
 
+function ccpGenerate() {
+    orgName=$1
+    ORG=$2
+
+    P0PORT=7051
+    CAPORT=7054
+
+    PEERPEM=build/crypto-config/peerOrganizations/ca_${orgName}.islab.re.kr/tlsca/tlsca.ca_${orgName}.islab.re.kr-cert.pem
+    CAPEM=build/crypto-config/peerOrganizations/ca_${orgName}.islab.re.kr/ca/ca.ca_${orgName}.islab.re.kr-cert.pem
+
+    echo "$(json_ccp $ORG $P0PORT $CAPORT $PEERPEM $CAPEM)" > build/crypto-config/peerOrganizations/ca_${orgName}.islab.re.kr/connection-${orgName}.json
+    echo "$(yaml_ccp $ORG $P0PORT $CAPORT $PEERPEM $CAPEM)" > build/crypto-config/peerOrganizations/ca_${orgName}.islab.re.kr/connection-${orgName}.yaml
+
+}
+
+function one_line_pem {
+    echo "`awk 'NF {sub(/\\n/, ""); printf "$s\\\\\\\n",$0;}' $1`"
+}
+
+function json_ccp() {
+    local PP=$(one_line_pem $4)
+    local CP=$(one_line_pem $5)
+    sed -e "s/\${ORG}/$1/" \
+        -e "s/\${P0PORT}/$2/" \
+        -e "s/\${CAPORT}/$3/" \
+        -e "s#\${PEERPEM}#$PP#" \
+        -e "s#\${CAPEM}#$CP#" \
+        template/ccp-template.json
+}
+
+function yaml_ccp() {
+    local PP=$(one_line_pem $4)
+    local CP=$(one_line_pem $5)
+    sed -e "s/\${ORG}/$1/" \
+        -e "s/\${P0PORT}/$2/" \
+        -e "s/\${CAPORT}/$3/" \
+        -e "s#\${PEERPEM}#$PP#" \
+        -e "s#\${CAPEM}#$CP#" \
+        template/ccp-template.yaml | sed -e $'s/\\\\n/\\\n          /g'
+}
+
 function makeOrgs() {
 
     orgName=$1
