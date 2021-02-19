@@ -158,7 +158,7 @@ Orderer: &OrdererDefaults
         - Host: orderer0.islab.re.kr
           Port: 7050
           ClientTLSCert: /tmp/crypto-config/ordererOrganizations/islab.re.kr/orderers/orderer0.islab.re.kr/tls/server.crt
-          ServerTLSCert: /tmp/crypto-config/ordererOrganizations/islab.re.kr/orderers/orderer0.islab.re.kr/tls/server.crt 
+          ServerTLSCert: /tmp/crypto-config/ordererOrganizations/islab.re.kr/orderers/orderer0.islab.re.kr/tls/server.crt
         - Host: orderer1.islab.re.kr
           Port: 7050
           ClientTLSCert: /tmp/crypto-config/ordererOrganizations/islab.re.kr/orderers/orderer1.islab.re.kr/tls/server.crt
